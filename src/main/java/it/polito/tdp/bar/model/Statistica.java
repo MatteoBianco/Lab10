@@ -36,16 +36,16 @@ public class Statistica {
 		this.numero_clienti_insoddisfatti = numero_clienti_insoddisfatti;
 	}
 	
-	public void incrementaClienti() {
-		this.numero_totale_clienti ++;
+	public void incrementaClienti(Integer clienti) {
+		this.numero_totale_clienti += clienti;
 	}
 	
-	public void incrementaSoddisfatti() {
-		this.numero_clienti_soddisfatti ++;
+	public void incrementaSoddisfatti(Integer soddisfatti) {
+		this.numero_clienti_soddisfatti += soddisfatti;
 	}
 	
-	public void incrementaInsoddisfatti() {
-		this.numero_clienti_insoddisfatti ++;
+	public void incrementaInsoddisfatti(Integer insoddisfatti) {
+		this.numero_clienti_insoddisfatti += insoddisfatti;
 	}
 
 	

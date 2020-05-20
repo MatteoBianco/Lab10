@@ -1,6 +1,7 @@
 package it.polito.tdp.bar.model;
 
-public class Tavolo implements Comparable<Tavolo>{
+
+public class Tavolo {
 
 	private Integer id;
 	private Integer posti;
@@ -66,11 +67,6 @@ public class Tavolo implements Comparable<Tavolo>{
 		if(nClienti <= this.posti & nClienti > (this.posti/2))
 			return true;
 		else return false;
-	}
-
-	@Override
-	public int compareTo(Tavolo o) {
-		return this.posti.compareTo(o.posti);
 	}
 
 	@Override

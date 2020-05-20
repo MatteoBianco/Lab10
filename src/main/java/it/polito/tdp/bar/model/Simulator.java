@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -18,9 +19,7 @@ public class Simulator {
 	//Parametri di simulazione
 	
 	private Integer NE; 	//numero eventi
-	private Integer NC; 	//numero clienti
 	private Integer NT;		//numero tavoli
-	private Duration TC; 	//tempo tra clienti
 	private Duration TP;	//tempo permanenza clienti
 	private Double tolleranza; 	//tolleranza dei clienti
 	
@@ -39,22 +38,26 @@ public class Simulator {
 		this.NT = 15;
 		this.statistica = new Statistica();
 		this.listaClienti = "";
-		
-		this.generaTavoli();
-		
+				
 		LocalDateTime time = LocalDateTime.now();
 		
 		for(int i=0; i<this.NE; i++) {
-			this.NC = (int) (Math.random()*10 + 1); 
-			this.TC = Duration.of(((int) (Math.random()*10 + 1)), ChronoUnit.MINUTES);
+			Integer NC = (int) (Math.random()*10 + 1); 
+			Duration TC = Duration.of(((int) (Math.random()*10 + 1)), ChronoUnit.MINUTES);
 			
-			queue.add(new Event(time, EventType.NEW_CLIENT, this.NC));
+			queue.add(new Event(time, EventType.NEW_CLIENT, NC));
 			time = time.plusMinutes(TC.toMinutes());
 		}
-		Collections.sort(this.tavoli);
 	}
 
 	public void run() {
+		
+		this.tavoli.sort(new Comparator<Tavolo>() {
+			@Override
+			public int compare(Tavolo o1, Tavolo o2) {
+				return o1.getPosti().compareTo(o2.getPosti());
+			}
+		});
 		
 		if(this.queue != null & this.tavoli != null) {
 			while(!this.queue.isEmpty()) {
@@ -68,7 +71,7 @@ public class Simulator {
 		
 		switch(e.getType()) {
 		case NEW_CLIENT: 
-			this.statistica.incrementaClienti();
+			this.statistica.incrementaClienti(e.getNumPersone());
 			Tavolo trovato = this.trovaTavolo(e.getNumPersone());
 			if(trovato != null) {
 				//Aggiorno il modello del mondo
@@ -78,16 +81,24 @@ public class Simulator {
 				e.setTavolo(trovato);						
 
 				//Aggiorno l'output
-				this.statistica.incrementaSoddisfatti();
+				this.statistica.incrementaSoddisfatti(e.getNumPersone());
 				this.listaClienti += e.toString();
 				
 				//Genero nuovi eventi
-				if(trovato.getId() != -1) {
-					this.TP = Duration.of(((int) (Math.random()*61 + 60)), ChronoUnit.MINUTES);
-					this.queue.add(new Event(e.getTime().plusMinutes(this.TP.toMinutes()), EventType.TABLE_RETURNED, e.getNumPersone(), trovato));
-				}
+				this.TP = Duration.of(((int) (Math.random()*61 + 60)), ChronoUnit.MINUTES);
+				this.queue.add(new Event(e.getTime().plus(this.TP), EventType.TABLE_RETURNED, e.getNumPersone(), trovato));
 			}
-			else this.statistica.incrementaInsoddisfatti();
+			else {
+				this.tolleranza = Math.random()*0.9;
+				if(Math.random() <= this.tolleranza) {
+					//Assegno il bancone (primo tavolo della lista, -1 posti per convenzione
+					e.setTavolo(tavoli.get(0));
+					//Aggiorno l'output
+					this.statistica.incrementaSoddisfatti(e.getNumPersone());
+					this.listaClienti += e.toString();
+				}
+				else this.statistica.incrementaInsoddisfatti(e.getNumPersone());
+			}
 			break;
 			
 		case TABLE_RETURNED: 
@@ -97,37 +108,11 @@ public class Simulator {
 	
 	private Tavolo trovaTavolo(Integer numPersone) {
 		
-		Collections.sort(this.tavoli);
 		for(Tavolo t : this.tavoli) {
 			if(t.isLibero() && t.tavoloAdeguato(numPersone))
 				return t;
 		}
-		this.tolleranza = Math.random()*0.9;
-		if(Math.random() <= this.tolleranza)
-			return new Tavolo(-1,-1, true);
 		return null;
-	}
-
-	private void generaTavoli() {
-
-		for(int i=1; i<=this.NT; i++) {
-			if(i<3) {
-				Tavolo t = new Tavolo(i, 10, true);
-				tavoli.add(t);
-			}
-			else if(i<7) {
-				Tavolo t = new Tavolo(i, 8, true);
-				tavoli.add(t);
-			}
-			else if(i<11) {
-				Tavolo t = new Tavolo(i, 6, true);
-				tavoli.add(t);
-			}
-			else {
-				Tavolo t = new Tavolo(i, 4, true);
-				tavoli.add(t);
-			}
-		}
 	}
 	
 	public Statistica getStatistica() {
@@ -136,6 +121,14 @@ public class Simulator {
 	
 	public String getElencoCLienti() {
 		return this.listaClienti;
+	}
+	
+	public void setTavoli(List<Tavolo> tavoli) {
+		this.tavoli = tavoli;
+	}
+	
+	public Integer getNT() {
+		return this.NT;
 	}
 	
 }
