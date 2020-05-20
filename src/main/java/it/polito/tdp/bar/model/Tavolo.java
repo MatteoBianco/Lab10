@@ -1,6 +1,6 @@
 package it.polito.tdp.bar.model;
 
-public class Tavolo {
+public class Tavolo implements Comparable<Tavolo>{
 
 	private Integer id;
 	private Integer posti;
@@ -63,8 +63,21 @@ public class Tavolo {
 	}
 	
 	public boolean tavoloAdeguato (Integer nClienti) {
-		if(nClienti < this.posti & nClienti > (this.posti/2))
+		if(nClienti <= this.posti & nClienti > (this.posti/2))
 			return true;
 		else return false;
 	}
+
+	@Override
+	public int compareTo(Tavolo o) {
+		return this.posti.compareTo(o.posti);
+	}
+
+	@Override
+	public String toString() {
+		if(this.id == -1)
+			return "Clienti serviti al bancone";
+		return "Tavolo n." + id + ", posti:" + posti;
+	}
+	
 }

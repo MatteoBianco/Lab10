@@ -2,6 +2,8 @@ package it.polito.tdp.bar.model;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 
 public class Event implements Comparable<Event> {
 	
@@ -11,19 +13,15 @@ public class Event implements Comparable<Event> {
 	
 	private LocalDateTime time;
 	private EventType type;
-	private Integer num_persone;
-	private Duration durata;
-	private Double tolleranza;
+	private Integer numPersone;
+	private Tavolo tavolo;
 	
-	public Event(LocalDateTime time, EventType type, Integer num_persone, Duration durata, Double tolleranza) {
+	public Event(LocalDateTime time, EventType type, Integer numPersone) {
 		super();
 		this.time = time;
 		this.type = type;
-		this.num_persone = num_persone;
-		this.durata = durata;
-		this.tolleranza = tolleranza;
+		this.numPersone = numPersone;
 	}
-	
 
 	public LocalDateTime getTime() {
 		return time;
@@ -41,34 +39,30 @@ public class Event implements Comparable<Event> {
 		this.type = type;
 	}
 
-
-	public Integer getNum_persone() {
-		return num_persone;
+	public Integer getNumPersone() {
+		return numPersone;
 	}
 
-	public void setNum_persone(Integer num_persone) {
-		this.num_persone = num_persone;
+	public void setNumPersone(Integer numPersone) {
+		this.numPersone = numPersone;
+	}
+	
+	public Tavolo getTavolo() {
+		return tavolo;
 	}
 
-	public Duration getDurata() {
-		return durata;
-	}
-
-	public void setDurata(Duration durata) {
-		this.durata = durata;
-	}
-
-	public Double getTolleranza() {
-		return tolleranza;
-	}
-
-	public void setTolleranza(Double tolleranza) {
-		this.tolleranza = tolleranza;
+	public void setTavolo(Tavolo tavolo) {
+		this.tavolo = tavolo;
 	}
 
 	@Override
 	public int compareTo(Event o) {
 		return this.time.compareTo(o.time);
+	}
+
+	@Override
+	public String toString() {
+		return "Giorno e ora: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG, FormatStyle.SHORT).format(time) + ";\nNumero di clienti al tavolo: " + numPersone + ";\n" + tavolo + "\n\n";
 	}
 	
 	

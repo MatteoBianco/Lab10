@@ -27,7 +27,13 @@ public class FXMLController {
 
     @FXML
     void handleSimula(ActionEvent event) {
-
+    	txtResult.clear();
+    	this.model.simula();
+    	txtResult.appendText("Gruppi di clienti arrivati al bar: " + this.model.getClienti() + "\n");
+    	txtResult.appendText("Gruppi di clienti soddisfatti: " + this.model.getSoddisfatti() + "\n");
+    	txtResult.appendText("Gruppi di clienti insoddisfatti: " + this.model.getInsoddisfatti() + "\n");
+    	txtResult.appendText("\n");
+    	txtResult.appendText("Elenco clienti: \n" + this.model.getElencoClienti());
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete

@@ -2,9 +2,9 @@ package it.polito.tdp.bar.model;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -13,7 +13,7 @@ import it.polito.tdp.bar.model.Event.EventType;
 
 public class Simulator {
 
-	private PriorityQueue queue;
+	private PriorityQueue<Event> queue;
 	
 	//Parametri di simulazione
 	
@@ -29,6 +29,7 @@ public class Simulator {
 	
 	//Parametri da calcolare
 	private Statistica statistica; 	//statistiche da calcolare
+	private String listaClienti;
 
 	public Simulator() {
 		super();
@@ -37,21 +38,81 @@ public class Simulator {
 		this.NE = 2000;
 		this.NT = 15;
 		this.statistica = new Statistica();
+		this.listaClienti = "";
 		
 		this.generaTavoli();
 		
 		LocalDateTime time = LocalDateTime.now();
 		
 		for(int i=0; i<this.NE; i++) {
-			this.tolleranza = Math.random()*0.9;
 			this.NC = (int) (Math.random()*10 + 1); 
 			this.TC = Duration.of(((int) (Math.random()*10 + 1)), ChronoUnit.MINUTES);
-			this.TP = Duration.of(((int) (Math.random()*61 + 60)), ChronoUnit.MINUTES);
 			
-			queue.add(new Event(time, EventType.NEW_CLIENT, this.NC, this.TP, this.tolleranza));
+			queue.add(new Event(time, EventType.NEW_CLIENT, this.NC));
 			time = time.plusMinutes(TC.toMinutes());
 		}
+		Collections.sort(this.tavoli);
+	}
+
+	public void run() {
 		
+		if(this.queue != null & this.tavoli != null) {
+			while(!this.queue.isEmpty()) {
+				Event e = this.queue.poll();
+				processEvent(e);
+			}
+		}
+	}
+	
+	private void processEvent(Event e) {
+		
+		switch(e.getType()) {
+		case NEW_CLIENT: 
+			this.statistica.incrementaClienti();
+			Tavolo trovato = this.trovaTavolo(e.getNumPersone());
+			if(trovato != null) {
+				//Aggiorno il modello del mondo
+
+				for(Tavolo t : tavoli) {
+					if(t.equals(trovato)) {
+						t.setLibero(false);
+					}
+				}
+				//assegno il tavolo
+				e.setTavolo(trovato);						
+
+				//Aggiorno l'output
+				this.statistica.incrementaSoddisfatti();
+				this.listaClienti += e.toString();
+				
+				//Genero nuovi eventi
+				if(trovato.getId() != -1) {
+					this.TP = Duration.of(((int) (Math.random()*61 + 60)), ChronoUnit.MINUTES);
+					this.queue.add(new Event(e.getTime().plusMinutes(this.TP.toMinutes()), EventType.TABLE_RETURNED, e.getNumPersone()));
+				}
+			}
+			else this.statistica.incrementaInsoddisfatti();
+			break;
+			
+		case TABLE_RETURNED: 
+			for(Tavolo t : tavoli) {
+				if(t.equals(e.getTavolo()))
+					t.setLibero(true);
+			}
+		}
+	}
+	
+	private Tavolo trovaTavolo(Integer numPersone) {
+		
+		Collections.sort(this.tavoli);
+		for(Tavolo t : this.tavoli) {
+			if(t.isLibero() && t.tavoloAdeguato(numPersone))
+				return t;
+		}
+		this.tolleranza = Math.random()*0.9;
+		if(Math.random() <= this.tolleranza)
+			return new Tavolo(-1,-1, true);
+		return null;
 	}
 
 	private void generaTavoli() {
@@ -74,6 +135,14 @@ public class Simulator {
 				tavoli.add(t);
 			}
 		}
+	}
+	
+	public Statistica getStatistica() {
+		return this.statistica;
+	}
+	
+	public String getElencoCLienti() {
+		return this.listaClienti;
 	}
 	
 }
