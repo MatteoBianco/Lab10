@@ -72,12 +72,8 @@ public class Simulator {
 			Tavolo trovato = this.trovaTavolo(e.getNumPersone());
 			if(trovato != null) {
 				//Aggiorno il modello del mondo
-
-				for(Tavolo t : tavoli) {
-					if(t.equals(trovato)) {
-						t.setLibero(false);
-					}
-				}
+				if(trovato.getId() != -1)
+					trovato.setLibero(false);				
 				//assegno il tavolo
 				e.setTavolo(trovato);						
 
@@ -88,17 +84,14 @@ public class Simulator {
 				//Genero nuovi eventi
 				if(trovato.getId() != -1) {
 					this.TP = Duration.of(((int) (Math.random()*61 + 60)), ChronoUnit.MINUTES);
-					this.queue.add(new Event(e.getTime().plusMinutes(this.TP.toMinutes()), EventType.TABLE_RETURNED, e.getNumPersone()));
+					this.queue.add(new Event(e.getTime().plusMinutes(this.TP.toMinutes()), EventType.TABLE_RETURNED, e.getNumPersone(), trovato));
 				}
 			}
 			else this.statistica.incrementaInsoddisfatti();
 			break;
 			
 		case TABLE_RETURNED: 
-			for(Tavolo t : tavoli) {
-				if(t.equals(e.getTavolo()))
-					t.setLibero(true);
-			}
+			e.getTavolo().setLibero(true);
 		}
 	}
 	

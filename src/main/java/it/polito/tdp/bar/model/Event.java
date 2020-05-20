@@ -22,6 +22,14 @@ public class Event implements Comparable<Event> {
 		this.type = type;
 		this.numPersone = numPersone;
 	}
+	
+	public Event(LocalDateTime time, EventType type, Integer numPersone, Tavolo tavolo) {
+		super();
+		this.time = time;
+		this.type = type;
+		this.numPersone = numPersone;
+		this.tavolo = tavolo;
+	}
 
 	public LocalDateTime getTime() {
 		return time;
